@@ -20,7 +20,7 @@ const tick = async(config, binanceClient) => {
         })
         
         const results = await Promise.all([
-            axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'),
+            axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'),
             axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
         ])
     
@@ -62,10 +62,10 @@ const tick = async(config, binanceClient) => {
 
 const run = () => {
     const config = {
-        asset : 'BTC',
+        asset : 'SOL',
         base : 'USDT',
         allocation : 0.7,
-        spread : 0.001,
+        spread : 0.01,
         tickInterval: 300000
     }
 
