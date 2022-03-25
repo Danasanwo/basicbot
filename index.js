@@ -17,7 +17,7 @@ const tick = async(config, binanceClient) => {
             console.log(` ${openOrders[0].side} order ${openOrders[0].id} of ${openOrders[0].amount} at ${openOrders[0].price} is still active`);
         } else {
         
-            const buyPrice = lastOrder.price * (1 - (2 * spread))
+            const buyPrice = lastCompletedOrder.price * (1 - (2 * spread))
             const balances = await binanceClient.fetchBalance()
             const baseBalance = balances.free[base]
             const buyVolume = (baseBalance * allocation) / marketPrice
