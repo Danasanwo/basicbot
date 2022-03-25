@@ -46,7 +46,7 @@ const tick = async(config, binanceClient) => {
             })
         }
 
-        const sellPrice = marketPrice * (1 + spread)
+        const sellPrice = marketPrice * (1 + (2 * spread))
         const balances = await binanceClient.fetchBalance()
         const assetBalance = balances.free[asset]
         const sellVolume =  assetBalance * allocation 
