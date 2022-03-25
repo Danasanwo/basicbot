@@ -7,54 +7,57 @@ const tick = async(config, binanceClient) => {
     const { asset, base, spread, allocation} = config
     const market = `${asset}/${base}`
 
-    const orders = await binanceClient.fetchOpenOrders(market)
-    console.log(orders);
+    const closedOrders = await binanceClient.fetchClosedOrders(market)
+    const openOrders = await binanceClient.fetchOpenOrders(market)
+    const lastCompletedOrder = await closedOrders[(closedOrders.length - 1)]
 
-    if ( orders.length == 1) {
-        console.log(` ${orders[0].side} order ${orders[0].id} of ${orders[0].amount} at ${orders[0].price} is still active`);
-        
-    } else {
 
-        orders.forEach( async order => {   
-            await binanceClient.cancelOrder(order.id, order.symbol);
-        })
+    if (lastCompletedOrder.side == 'sell') {
+        if ( openOrders.length == 1 ) {
+            console.log(` ${openOrders[0].side} order ${openOrders[0].id} of ${openOrders[0].amount} at ${openOrders[0].price} is still active`);
+        } else {
         
+            const buyPrice = lastOrder.price * (1 - (2 * spread))
+            const balances = await binanceClient.fetchBalance()
+            const baseBalance = balances.free[base]
+            const buyVolume = (baseBalance * allocation) / marketPrice
+
+            await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice)
+
+            console.log(
+                `New tick for ${market}
+                Created limit buy order of ${buyVolume} @ ${buyPrice}
+                 `
+            );
+        }
+    } else if (lastCompletedOrder.side == 'buy') {
+        if ( openOrders.length == 1 ) {
+
+            openOrders.forEach( async order => {   
+                await binanceClient.cancelOrder(order.id, order.symbol);
+            })
+        }
+
         const results = await Promise.all([
             axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'),
             axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
         ])
-    
-        const marketPrice = results[0].data.bitcoin.usd/ results[1].data.tether.usd
-    
+
+        const marketPrice = results[0].data.solana.usd/ results[1].data.tether.usd
         const sellPrice = marketPrice * (1 + spread)
-        const buyPrice = marketPrice * (1 - spread)
         const balances = await binanceClient.fetchBalance()
         const assetBalance = balances.free[asset]
-        const baseBalance = balances.free[base]
         const sellVolume =  assetBalance * allocation 
-        const buyVolume = (baseBalance * allocation) / marketPrice
-    
-        console.log(market, buyPrice, sellPrice, sellVolume, buyVolume);
-        console.log(balances.free[asset], balances.free[base]);
-    
-        
-    
-        await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice)
+
         await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice)
-    
-    
-        console.log(orders);
-    
-    
+
         console.log(
             `New tick for ${market}
             Created limit sell order of ${sellVolume} @ ${sellPrice}
-            Created limit buy order of ${buyVolume} @ ${buyPrice}
-    
             `
         );
 
-    } 
+    }    
 
 }
 
@@ -64,8 +67,8 @@ const run = () => {
     const config = {
         asset : 'SOL',
         base : 'USDT',
-        allocation : 0.7,
-        spread : 0.01,
+        allocation : 1,
+        spread : 0.005,
         tickInterval: 300000
     }
 
