@@ -12,6 +12,14 @@ const tick = async(config, binanceClient) => {
     const lastCompletedOrder = await closedOrders[(closedOrders.length - 1)]
 
 
+    const results = await Promise.all([
+        axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'),
+        axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
+    ])
+
+    const marketPrice = results[0].data.solana.usd/ results[1].data.tether.usd
+
+
     if (lastCompletedOrder.side == 'sell') {
         if ( openOrders.length == 1 ) {
             console.log(` ${openOrders[0].side} order ${openOrders[0].id} of ${openOrders[0].amount} at ${openOrders[0].price} is still active`);
@@ -38,12 +46,6 @@ const tick = async(config, binanceClient) => {
             })
         }
 
-        const results = await Promise.all([
-            axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'),
-            axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
-        ])
-
-        const marketPrice = results[0].data.solana.usd/ results[1].data.tether.usd
         const sellPrice = marketPrice * (1 + spread)
         const balances = await binanceClient.fetchBalance()
         const assetBalance = balances.free[asset]
