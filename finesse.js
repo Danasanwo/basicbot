@@ -80,7 +80,7 @@ const tick = async(config, binanceClient) => {
         }
 
         if (baseBalance > 30) {
-            const buyPrice = marketPrice * (1 - (1.1 * spread))
+            const buyPrice = marketPrice * (1 - spread)
             const buyVolume = (baseBalance * allocation) / marketPrice
 
             await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice)
@@ -99,7 +99,7 @@ const tick = async(config, binanceClient) => {
         }
 
         if (assetBalance > 0.3) {
-            const sellPrice = marketPrice * (1 + (1.1 * spread))
+            const sellPrice = marketPrice * (1 + spread)
             const sellVolume = (assetBalance * allocation) 
 
             console.log(sellVolume, sellPrice);
