@@ -17,19 +17,21 @@ const tick = async(config, binanceClient) => {
      // cancel existing orders 
 
      if (openOrders.length > 1) {
-    //      openOrders.forEach( async i => {
-    //        await binanceClient.cancelOrder(i.id, i.symbol)
-    //     });
-        console.log(openOrders[0].id);
+        console.log(` ${ openOrders[0].id } is still active `);
     }
 
     // market Price 
-    const results = await Promise.all([
-        axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'),
-        axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
-    ])
 
-    const marketPrice = results[0].data.solana.usd/ results[1].data.tether.usd
+    // const results = await Promise.all([
+    //     axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'),
+    //     axios.get('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd')
+    // ])
+
+    // const marketPrice = results[0].data.solana.usd/ results[1].data.tether.usd
+
+    const results = await binanceClient.fetchOrderBook(market)
+
+    const marketPrice = results.bids[0]
 
     // balances 
 
@@ -75,11 +77,17 @@ const tick = async(config, binanceClient) => {
     // conditional trades 
 
     if (conditioner < 2) {
-        if (openOrders.length == 1) {
-            if (openOrders[0].side == 'sell') binanceClient.cancelOrder(openOrders[0].id, openOrders[0].symbol)
+
+        // cancel existing sell order 
+
+        if (openOrders.length > 0) {
+            openOrders.forEach(i => {
+                if ( i.side == 'sell') binanceClient.cancelOrder(i.id, i.symbol)
+            });
         }
 
-        if (baseBalance > 30) {
+        // place one order 
+        if (baseBalance > 30 && baseBalance < 60) {
             const buyPrice = marketPrice * (1 - spread)
             const buyVolume = (baseBalance * allocation) / marketPrice
 
@@ -91,14 +99,39 @@ const tick = async(config, binanceClient) => {
                  `
             );
         }
+
+        // place two orders 
+
+        if (baseBalance > 60) {
+            const oneBuyPrice = marketPrice * (1 - spread)
+            const twoBuyPrice = marketPrice * (1 - (2 * spread))
+            const buyVolume = (baseBalance * (allocation/ 2)) / marketPrice
+
+            await binanceClient.createLimitBuyOrder(market, buyVolume, oneBuyPrice)
+            await binanceClient.createLimitBuyOrder(market, buyVolume, twoBuyPrice)
+
+            console.log(
+                `New tick for ${market}
+                Created limit buy order of ${buyVolume} @ ${oneBuyPrice}
+                Created limit buy order of ${buyVolume} @ ${twoBuyPrice}
+                 `
+            );
+        }
     } 
 
     if (conditioner > 2) {
-        if (openOrders.length == 1) {
-            if (openOrders[0].side == 'buy') binanceClient.cancelOrder(openOrders[0].id, openOrders[0].symbol)
-        }
 
-        if (assetBalance > 0.3) {
+        // cancel all existing order 
+
+        if (openOrders.length > 0) {
+            openOrders.forEach(i => {
+                if ( i.side == 'buy') binanceClient.cancelOrder(i.id, i.symbol)
+            });
+        } 
+
+        // place one order 
+
+        if (assetBalance > 0.3 && assetBalance < 0.6) {
             const sellPrice = marketPrice * (1 + spread)
             const sellVolume = (assetBalance * allocation) 
 
@@ -112,29 +145,30 @@ const tick = async(config, binanceClient) => {
                 `
             ); 
         }  
+
+        // place two orders 
+        if (baseBalance > 0.6) {
+
+            const oneSellPrice = marketPrice * (1 + spread)
+            const twoSellPrice = marketPrice * (1 + (2 * spread))
+            const sellVolume = (assetBalance * (allocation/2)) 
+
+
+            await binanceClient.createLimitSellOrder(market, sellVolume, oneSellPrice)
+            await binanceClient.createLimitSellOrder(market, sellVolume, twoSellPrice)
+
+            console.log(
+                `New tick for ${market}
+                Created limit sell order of ${sellVolume} @ ${oneSellPrice}
+                Created limit sell order of ${sellVolume} @ ${twoSellPrice}
+                `
+            ); 
+        }
     }
 
     if (conditioner == 2) {
         console.log('we go again')
     }
-
-    // if (conditioner == 2) {
-    //     const buyPrice = marketPrice * (1 - (1.3 * spread))
-    //     const buyVolume = (baseBalance * allocation) / marketPrice
-    //     const sellPrice = marketPrice * (1 + (1.3 * spread))
-    //     const sellVolume = (assetBalance * allocation) 
-
-    //     await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice)
-    //     await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice)
-
-    //     console.log(
-    //         `New tick for ${market}
-    //         Created limit buy order of ${buyVolume} @ ${buyPrice}
-    //         Created limit sell order of ${sellVolume} @ ${sellPrice}
-    //         `
-    //     ); 
-
-    // }
     
 }
 
