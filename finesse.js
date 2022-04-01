@@ -31,7 +31,7 @@ const tick = async(config, binanceClient) => {
 
     const results = await binanceClient.fetchOrderBook(market)
 
-    const marketPrice = results.bids[0]
+    const marketPrice = await results.bids[0][0]
 
     // balances 
 
@@ -52,7 +52,7 @@ const tick = async(config, binanceClient) => {
     const timeFour = lastFiveOHLVC[3][4]
     const timeFive = lastFiveOHLVC[4][4]
 
-    console.log(timeOne, timeTwo, timeThree, timeFour, timeFive);
+
 
     // conditional OHLVC 
 
@@ -135,8 +135,6 @@ const tick = async(config, binanceClient) => {
             const sellPrice = marketPrice * (1 + spread)
             const sellVolume = (assetBalance * allocation) 
 
-            console.log(sellVolume, sellPrice);
-
             await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice)
 
             console.log(
@@ -147,16 +145,19 @@ const tick = async(config, binanceClient) => {
         }  
 
         // place two orders 
-        if (baseBalance > 0.6) {
+        if (assetBalance > 0.6) {
 
             const oneSellPrice = marketPrice * (1 + spread)
             const twoSellPrice = marketPrice * (1 + (2 * spread))
             const sellVolume = (assetBalance * (allocation/2)) 
 
+            console.log(market, sellVolume, oneSellPrice);
+
 
             await binanceClient.createLimitSellOrder(market, sellVolume, oneSellPrice)
             await binanceClient.createLimitSellOrder(market, sellVolume, twoSellPrice)
 
+            
             console.log(
                 `New tick for ${market}
                 Created limit sell order of ${sellVolume} @ ${oneSellPrice}
