@@ -93,6 +93,9 @@ const tick = async(config, binanceClient) => {
             `
         );     
     }
+
+
+    console.log('we go again');
 }
 
 
