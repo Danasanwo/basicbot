@@ -43,7 +43,7 @@ const tick = async(config, binanceClient) => {
 
     // OHLVC 
 
-    const historicalOHLVC = (await binanceClient.fetchMarkOHLCV ('SOL/USDT', '5m'))
+    const historicalOHLVC = (await binanceClient.fetchMarkOHLCV ('SOL/USDT', '30m'))
     const lastFiveOHLVC  = await historicalOHLVC.splice((historicalOHLVC.length - 5))
 
     const timeOne = lastFiveOHLVC[0][4]
@@ -180,8 +180,8 @@ const run = () => {
         asset : 'SOL',
         base : 'USDT',
         allocation : 1,
-        spread : 0.003,
-        tickInterval: 300000
+        spread : 0.004,
+        tickInterval: 1800000
     }
 
     const binanceClient = new ccxt.binance({

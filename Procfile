@@ -1,2 +1,2 @@
 
-worker: node finesse.js
+worker: node newnew.js
