@@ -59,7 +59,31 @@ const tick = async(config, binanceClient) => {
 
             }
         })
+    } else if (openOrders.length == 0) {
+        if ( marketPrice > (1.01 * lastCompletedOrder.price) && lastCompletedOrder.side == 'sell' && baseBalance > 30) {
+            const buyVolume = (baseBalance * allocation) / marketPrice
+            await binanceClient.createLimitBuyOrder(market, buyVolume, marketPrice)
+
+            console.log(
+                `New tick for ${market}
+                Created limit buy order of ${buyVolume} @ ${marketPrice}
+                 `
+            );
+        }
+
+        if (marketPrice < (0.99 * lastCompletedOrder.price) && lastCompletedOrder.side == 'buy' && assetBalance > 0.3) {
+            const sellVolume =  assetBalance * allocation 
+            await binanceClient.createLimitSellOrder(market, sellVolume, marketPrice)
+
+            console.log(
+                `New tick for ${market}
+                Created limit sell order of ${sellVolume} @ ${marketPrice}
+                `
+            ); 
+        }
+    
     }
+
 
 
     // conditional trades 
@@ -91,11 +115,12 @@ const tick = async(config, binanceClient) => {
 
         console.log(
             `   New tick for ${market}
-                Created limit buy order of ${sellVolume} @ ${sellPrice}
+                Created limit sell order of ${sellVolume} @ ${sellPrice}
             `
         );     
     }
 
+    
 
     console.log('we go again');
 }
