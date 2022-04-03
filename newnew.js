@@ -84,8 +84,10 @@ const tick = async(config, binanceClient) => {
     if (lastCompletedOrder.side == 'buy' && marketPrice > lastCompletedOrder.price && assetBalance > 0.3) {
         const sellVolume =  assetBalance * allocation 
         const sellPrice =  marketPrice * (1 + spread)
+
+        console.log(sellVolume, sellPrice);
         
-        await binanceClient.createLimitBuyOrder(market, sellVolume, sellPrice)
+        await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice)
 
         console.log(
             `   New tick for ${market}
