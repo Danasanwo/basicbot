@@ -33,7 +33,7 @@ const tick = async(config, binanceClient) => {
             // cancel buy limit orders that are less than 1% below the market price 
 
             if (i.side == 'buy' && i.price <= (0.99 * marketPrice)) {
-                binanceClient.cancelOrder(i.id, i.symbol)
+                await binanceClient.cancelOrder(i.id, i.symbol)
                 const buyVolume = (baseBalance * allocation) / marketPrice
                 await binanceClient.createLimitBuyOrder(market, buyVolume, marketPrice)
 
@@ -47,7 +47,7 @@ const tick = async(config, binanceClient) => {
             // cancel sell limit orders that are above than 1% above the market price 
 
             if (i.side == 'sell' && i.price >= (1.01 * marketPrice)) {
-                binanceClient.cancelOrder(i.id, i.symbol)
+                await binanceClient.cancelOrder(i.id, i.symbol)
                 const sellVolume =  assetBalance * allocation 
                 await binanceClient.createLimitSellOrder(market, sellVolume, marketPrice)
 
