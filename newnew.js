@@ -28,7 +28,7 @@ const tick = async(config, binanceClient) => {
     // in case market goes high/low
 
     if (openOrders.length > 0) {
-        openOrders.forEach(i => {
+        openOrders.forEach( async i=> {
 
             // cancel buy limit orders that are less than 1% below the market price 
 
