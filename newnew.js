@@ -106,7 +106,7 @@ const run = () => {
         base : 'USDT',
         allocation : 1,
         spread : 0.003,
-        tickInterval: 180000
+        tickInterval: 60000
     }
 
     const binanceClient = new ccxt.binance({
