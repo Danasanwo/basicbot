@@ -132,7 +132,7 @@ const run = () => {
         asset : 'SOL',
         base : 'USDT',
         allocation : 1,
-        spread : 0.004,
+        spread : 0.0025,
         tickInterval: 60000
     }
 
