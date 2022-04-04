@@ -32,7 +32,7 @@ const tick = async(config, binanceClient) => {
 
             // cancel buy limit orders that are less than 1% below the market price 
 
-            if (i.side == 'buy' && i.price <= (0.99 * marketPrice)) {
+            if (i.side == 'buy' && i.price <= (0.98 * marketPrice)) {
                 await binanceClient.cancelOrder(i.id, i.symbol)
                 const buyVolume = (baseBalance * allocation) / marketPrice
                 await binanceClient.createLimitBuyOrder(market, buyVolume, marketPrice)
@@ -46,7 +46,7 @@ const tick = async(config, binanceClient) => {
 
             // cancel sell limit orders that are above than 1% above the market price 
 
-            if (i.side == 'sell' && i.price >= (1.01 * marketPrice)) {
+            if (i.side == 'sell' && i.price >= (1.02 * marketPrice)) {
                 await binanceClient.cancelOrder(i.id, i.symbol)
                 const sellVolume =  assetBalance * allocation 
                 await binanceClient.createLimitSellOrder(market, sellVolume, marketPrice)
@@ -60,7 +60,7 @@ const tick = async(config, binanceClient) => {
             }
         })
     } else if (openOrders.length == 0) {
-        if ( marketPrice > (1.01 * lastCompletedOrder.price) && lastCompletedOrder.side == 'sell' && baseBalance > 30) {
+        if ( marketPrice > (1.02 * lastCompletedOrder.price) && lastCompletedOrder.side == 'sell' && baseBalance > 30) {
             const buyVolume = (baseBalance * allocation) / marketPrice
             await binanceClient.createLimitBuyOrder(market, buyVolume, marketPrice)
 
@@ -71,7 +71,7 @@ const tick = async(config, binanceClient) => {
             );
         }
 
-        if (marketPrice < (0.99 * lastCompletedOrder.price) && lastCompletedOrder.side == 'buy' && assetBalance > 0.3) {
+        if (marketPrice < (0.98 * lastCompletedOrder.price) && lastCompletedOrder.side == 'buy' && assetBalance > 0.3) {
             const sellVolume =  assetBalance * allocation 
             await binanceClient.createLimitSellOrder(market, sellVolume, marketPrice)
 
@@ -132,7 +132,7 @@ const run = () => {
         asset : 'SOL',
         base : 'USDT',
         allocation : 1,
-        spread : 0.003,
+        spread : 0.004,
         tickInterval: 60000
     }
 
