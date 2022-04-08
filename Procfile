@@ -1,2 +1,2 @@
 
-worker: node newnew.js
+worker: node
